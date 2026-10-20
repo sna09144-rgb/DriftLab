@@ -4,6 +4,10 @@ import pandas as pd
 def export_csv(detail, aggregate):
     return detail.to_csv(index=False), aggregate.to_csv(index=False)
 
+def export_paired_csv(detail):
+    from .statistics import paired_comparisons
+    return paired_comparisons(detail).to_csv(index=False)
+
 def export_json(result):
     return json.dumps({
         "format_version": 1, "experiment_id": result.experiment_id,
@@ -49,8 +53,15 @@ def markdown_report(result):
         cols=[c for c in ["intensity","strategy","f1_mean","f1_std","n_successful_repeats"] if c in top]
         lines.append(_markdown_table(top[cols].round(4)))
     else: lines.append("Нет агрегированных результатов.")
+    from .statistics import paired_comparisons
+    paired = paired_comparisons(result.detail)
+    lines += ["", "## Парные сравнения стратегий", "",
+              "Разность рассчитана как первая стратегия минус вторая; 95%-й интервал построен по распределению Стьюдента. Поправка Холма применяется отдельно для каждой метрики по всем парам стратегий и уровням интенсивности.", ""]
+    if not paired.empty:
+        cols = [c for c in ["metric", "intensity", "contrast", "mean_diff", "ci95_low", "ci95_high", "p_raw", "p_holm", "reject_holm_0_05"] if c in paired]
+        lines.append(_markdown_table(paired[cols].round(5)))
     lines += ["", "## Ограничения", "",
-              "- 95%-е интервалы строятся по повторам с помощью распределения Стьюдента (df = n-1); при малом числе повторов они широкие, значимость различий отдельно не проверялась.",
+              "- 95%-е интервалы и парные t-тесты описывают вариативность между повторами; выводы относятся к выбранной синтетической постановке.",
               "- Covariate shift задаётся смещением второго признака с последующей разметкой фиксированным нелинейным правилом: меняется P(X), правило P(Y|X) остаётся прежним.",
               "- Concept drift меняет ориентацию правила разметки; модели и результаты относятся к заданному синтетическому сценарию.", ""]
     return "\n".join(lines)

@@ -37,3 +37,17 @@ class ExperimentConfig:
         result = asdict(self)
         result["strategies"] = list(self.strategies)
         return result
+
+
+# Exact configuration used for the conference article and Table 1.
+ARTICLE_PRESET = {
+    "drift_min": 0.0, "drift_max": 1.0, "drift_levels": 6,
+    "repeats": 30, "n_train": 500, "n_adapt": 300, "n_test": 1000,
+    "label_noise": 0.05, "seed": 20261910,
+}
+
+def article_config(drift_type: str) -> ExperimentConfig:
+    """Return the fixed, documented configuration used in the article."""
+    if drift_type not in DRIFT_TYPES:
+        raise ValueError("drift_type must be 'covariate' or 'concept'")
+    return ExperimentConfig(drift_type=drift_type, **ARTICLE_PRESET).validate()

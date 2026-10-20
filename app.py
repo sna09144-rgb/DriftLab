@@ -4,7 +4,7 @@ from src.config import ExperimentConfig, STRATEGIES, METRIC_LABELS
 from src.experiment import run_experiment
 from src.storage import save_result, list_experiments, load_result
 from src.statistics import paired_difference
-from src.reporting import export_csv, export_json, markdown_report
+from src.reporting import export_csv, export_json, markdown_report, export_paired_csv
 from src.visualization import drift_chart, metric_comparison, scatter_plot, decision_boundary, confusion_heatmap
 from src.metrics import calculate_metrics
 from src.models import predict_model, positive_scores
@@ -96,6 +96,7 @@ elif page=="Лаборатория":
         d,a=export_csv(result.detail,result.aggregate)
         st.download_button("Скачать детальные результаты CSV",d,"driftlab_detail.csv","text/csv")
         st.download_button("Скачать агрегированные результаты CSV",a,"driftlab_aggregate.csv","text/csv")
+        st.download_button("Скачать парные сравнения, ДИ и p-value CSV",export_paired_csv(result.detail),"driftlab_paired_statistics.csv","text/csv")
         st.download_button("Экспорт JSON",export_json(result),"driftlab_experiment.json","application/json")
         st.download_button("Научный отчёт Markdown",markdown_report(result),"driftlab_report.md","text/markdown")
 
